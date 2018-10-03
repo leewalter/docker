@@ -1,0 +1,133 @@
+steps to docker build, tag, push, pull and run smaller alpine image:
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ cat app.py
+from flask import Flask
+import os
+import socket
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    html = "<h3>Walter Lee docker build on python-apline base with FLask - Hello, World!</h3>"
+    return html
+
+if __name__ == "__main__":
+  app.run(host='0.0.0.0', port=8080)
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ docker build -t small-alpine-image .
+
+
+ ---> Using cache
+ ---> 053c0b70016b
+Step 3/6 : ADD . /app
+ ---> 3bb2a10b6fb9
+Step 4/6 : RUN pip install -r requirements.txt
+ ---> Running in 5b1571ede750
+Collecting Flask (from -r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/7f/e7/08578774ed4536d3242b14dacb4696386634607af824ea997202cd0edb4b/Flask-1.0.2-py2.py3-none-any.whl (91kB)
+Collecting Werkzeug>=0.14 (from Flask->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/20/c4/12e3e56473e52375aa29c4764e70d1b8f3efa6682bef8d0aae04fe335243/Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=5.1 (from Flask->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/fa/37/45185cb5abbc30d7257104c434fe0b07e5a195a6847506c074527aa599ec/Click-7.0-py2.py3-none-any.whl (81kB)
+Collecting itsdangerous>=0.24 (from Flask->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/dc/b4/a60bcdba945c00f6d608d8975131ab3f25b22f2bcfe1dab221165194b2d4/itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.10 (from Flask->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/7f/ff/ae64bacdfc95f27a016a7bed8e8686763ba4d277a78ca76f32659220a731/Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.10->Flask->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/2c/4a/61/5599631c1554768c6290b08c02c72d7317910374ca602ff1e5
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/33/56/20/ebe49a5c612fffe1c5a632146b16596f9e64676768661e4e46
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: Werkzeug, click, itsdangerous, MarkupSafe, Jinja2, Flask
+Successfully installed Flask-1.0.2 Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.14.1 click-7.0 itsdangerous-0.24
+Removing intermediate container 5b1571ede750
+ ---> 73cf342898c5
+Step 5/6 : EXPOSE 8080
+ ---> Running in c4eb363e0654
+Removing intermediate container c4eb363e0654
+ ---> 5b67b1230e6e
+Step 6/6 : CMD ["python", "app.py"]
+ ---> Running in cd0f4d577a69
+Removing intermediate container cd0f4d577a69
+ ---> 89144353d877
+Successfully built 89144353d877
+Successfully tagged small-alpine-image:latest
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$
+
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ ls -lrt
+total 16
+-rw-r--r-- 1 happywalter happywalter   6 Oct  2 22:58 requirements.txt
+-rw-r--r-- 1 happywalter happywalter 293 Oct  2 23:22 Dockerfile.org
+-rw-r--r-- 1 happywalter happywalter 295 Oct  2 23:22 Dockerfile
+-rw-r--r-- 1 happywalter happywalter 277 Oct  2 23:26 app.py
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ docker tag small-alpine-image gcr.io/walter-slack-bot-218118/small-alpine-image
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ gcloud docker -- push gcr.io/walter-slack-bot-218118/small-alpine-image
+WARNING: `gcloud docker` will not be supported for Docker client versions above 18.03.
+
+As an alternative, use `gcloud auth configure-docker` to configure `docker` to
+use `gcloud` as a credential helper, then use `docker` as you would for non-GCR
+registries, e.g. `docker pull gcr.io/project-id/my-image`. Add
+`--verbosity=error` to silence this warning: `gcloud docker
+--verbosity=error -- pull gcr.io/project-id/my-image`.
+
+See: https://cloud.google.com/container-registry/docs/support/deprecation-notices#gcloud-docker
+
+The push refers to repository [gcr.io/walter-slack-bot-218118/small-alpine-image]
+88df3748a4fc: Pushed
+566977c23608: Pushed
+c0db7ed959ea: Pushed
+9a8a22d92b09: Pushed
+c7358e96e74b: Pushed
+2c30600325be: Pushed
+df64d3292fd6: Layer already exists
+latest: digest: sha256:a22b9912166384c5e9c701d975ea24408c68fcff2d6ab3e50c6f61fb7c451292 size: 1786
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ gcloud docker -- pull gcr.io/walter-slack-bot-218118/small-alpine-image
+WARNING: `gcloud docker` will not be supported for Docker client versions above 18.03.
+
+As an alternative, use `gcloud auth configure-docker` to configure `docker` to
+use `gcloud` as a credential helper, then use `docker` as you would for non-GCR
+registries, e.g. `docker pull gcr.io/project-id/my-image`. Add
+`--verbosity=error` to silence this warning: `gcloud docker
+--verbosity=error -- pull gcr.io/project-id/my-image`.
+
+See: https://cloud.google.com/container-registry/docs/support/deprecation-notices#gcloud-docker
+
+Using default tag: latest
+latest: Pulling from walter-slack-bot-218118/small-alpine-image
+Digest: sha256:a22b9912166384c5e9c701d975ea24408c68fcff2d6ab3e50c6f61fb7c451292
+Status: Image is up to date for gcr.io/walter-slack-bot-218118/small-alpine-image:latest
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ gcloud container images list
+NAME
+gcr.io/walter-slack-bot-218118/quickstart-image
+gcr.io/walter-slack-bot-218118/small-alpine-image
+Only listing images in gcr.io/walter-slack-bot-218118. Use --repository to list images in other repositories.
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+happywalter@cloudshell:~/dimage (walter-slack-bot-218118)$ docker run -p 8080:8080 gcr.io/walter-slack-bot-218118/small-alpine-image
+ * Serving Flask app "app" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
+172.18.0.1 - - [03/Oct/2018 06:35:49] "GET /?authuser=0 HTTP/1.1" 200 -
+
+https://8080-dot-3910302-dot-devshell.appspot.com/?authuser=0
+
+Walter Lee docker build on python-apline base with FLask - Hello, World!
+
+
+
